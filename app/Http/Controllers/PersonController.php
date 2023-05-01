@@ -40,7 +40,7 @@ class PersonController extends Controller
      * @param int $id
      * @return JsonResponse
      */
-    public function read($id): JsonResponse
+    public function read(int $id): JsonResponse
     {
         try {
             $person = Person::find($id);
