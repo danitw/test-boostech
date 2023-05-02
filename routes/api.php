@@ -15,9 +15,11 @@ use Illuminate\Support\Facades\Route;
 */
 
 Route::prefix('person')->group(function () {
-    Route::post('/create', [PersonController::class, 'create']);
+    Route::post('create', [PersonController::class, 'create']);
     Route::get('list', [PersonController::class, 'list']);
     Route::get('read/{id}', [PersonController::class, 'read']);
     Route::put('update/{id}', [PersonController::class, 'update']);
     Route::delete('delete/{id}', [PersonController::class, 'delete']);
+    ROute::get('makeRaffle',  [PersonController::class, 'makeRaffle']);
+    ROute::get('raffleResult',  [PersonController::class, 'raffleResult']);
 });

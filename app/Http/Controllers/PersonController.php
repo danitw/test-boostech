@@ -6,6 +6,7 @@ use App\Http\Requests\PersonCreateRequest;
 use App\Http\Requests\PersonUpdateRequest;
 use App\Models\Person;
 use Illuminate\Http\JsonResponse;
+use Illuminate\Support\Facades\DB;
 use Illuminate\Support\Facades\Log;
 
 class PersonController extends Controller
@@ -110,5 +111,66 @@ class PersonController extends Controller
             Log::error('Error deleting person' . $th->getMessage() . $th->getLine() . $th->getFile());
             return response()->json(['error' => 'error deleting person'], 500);
         }
+    }
+
+    /**
+     * Make Raffle
+     * @return JsonResponse
+     */
+    public function makeRaffle(): JsonResponse
+    {
+        $results = [];
+
+        $people = Person::all();
+
+        $shuffled = $people->shuffle();
+
+        for ($i = 0; $i < count($shuffled); $i++) {
+            $person1 = $shuffled[$i];
+            $person2 = $shuffled[($i + 1) % count($shuffled)];
+            $person1->person_id = $person2->id;
+
+            $person1->save();
+
+            $results[] = [
+                'person1' => $person1,
+                'person2' => $person2,
+            ];
+        }
+
+        return response()->json($results);
+    }
+
+    /**
+     * Get result of Raffle
+     * @return JsonResponse
+     */
+    public function raffleResult(): JsonResponse
+    {
+        $results = DB::table('persons as p1')
+            ->leftJoin('persons as p2', 'p1.person_id', '=', 'p2.id')
+            ->select(
+                'p1.name as person1_name',
+                'p1.email as person1_email',
+                'p2.name as person2_name',
+                'p2.email as person2_email'
+            )
+            ->orderBy('p1.name')
+            ->get();
+
+        $raffleResults = $results->map(function ($result) {
+            return [
+                'person1' => [
+                    'name' => $result->person1_name,
+                    'email' => $result->person1_email,
+                ],
+                'person2' => [
+                    'name' => $result->person2_name,
+                    'email' => $result->person2_email,
+                ]
+            ];
+        });
+
+        return response()->json($raffleResults);
     }
 }
